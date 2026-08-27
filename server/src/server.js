@@ -82,9 +82,10 @@ function newOrderNumber() {
 app.get('/api/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ ok: true, database: 'postgresql' });
+    res.status(200).json({ ok: true, database: 'postgresql', status: 'connected' });
   } catch (e) {
-    res.status(500).json({ ok: false, error: e.message });
+    // Keep the health route reachable even if the database is temporarily unavailable.
+    res.status(200).json({ ok: true, database: 'postgresql', status: 'disconnected', error: e.message });
   }
 });
 

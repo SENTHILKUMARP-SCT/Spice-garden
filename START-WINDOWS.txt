@@ -1,0 +1,23 @@
+FULL PROJECT START — WINDOWS
+
+1. Extract the ZIP.
+2. Open the extracted folder in VS Code.
+3. Open server\.env.
+4. Replace PUT_YOUR_MYSQL_PASSWORD_HERE with your MySQL root password.
+5. In MySQL Workbench, run database.sql.
+6. VS Code Terminal 1:
+   cd server
+   npm install
+   npm run dev
+7. Browser test:
+   http://localhost:5000/api/health
+8. VS Code Terminal 2 (project root):
+   npm install
+   npm run dev
+9. Open the Vite URL, normally http://localhost:5173.
+
+IMPORTANT:
+- Keep both terminals running.
+- The file must be named exactly server\.env, not .env.txt.
+
+10. If /api/health cannot connect to MySQL, check server\.env. DB_PORT must match your MySQL server port (commonly 3306).

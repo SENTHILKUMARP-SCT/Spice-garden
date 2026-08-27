@@ -1,0 +1,16 @@
+export const restaurant = {
+  name: "Spice Garden",
+  tagline: "Authentic flavours, made fresh.",
+  description: "A modern South Indian restaurant serving biryanis, starters, refreshing drinks and desserts.",
+  logo: "SG",
+  phone: "+91 99999 99999",
+  whatsappNumber: "9994521119",
+  address: "12 Food Street, Chennai, Tamil Nadu",
+  openingTime: "10:00",
+  closingTime: "22:30",
+  currency: "₹",
+  taxPercentage: 0,
+  packagingCharge: 20,
+  googleMapsUrl: "https://maps.google.com",
+  instagramUrl: "https://instagram.com",
+} as const

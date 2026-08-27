@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700">
+<rect width="900" height="700" fill="#eeeeee"/>
+<ellipse cx="450" cy="390" rx="290" ry="170" fill="#222"/>
+<ellipse cx="450" cy="365" rx="255" ry="145" fill="#b86f2d"/>
+<circle cx="360" cy="330" r="38" fill="#f2d4a7"/><circle cx="465" cy="300" r="38" fill="#f2d4a7"/><circle cx="545" cy="370" r="38" fill="#f2d4a7"/><circle cx="410" cy="420" r="38" fill="#f2d4a7"/><circle cx="520" cy="440" r="38" fill="#f2d4a7"/>
+<path d="M290 250 Q450 150 610 250" fill="none" stroke="#f8f8f8" stroke-width="18" stroke-linecap="round" opacity=".8"/>
+<text x="450" y="610" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" fill="#111">Paneer Butter Masala</text>
+</svg>

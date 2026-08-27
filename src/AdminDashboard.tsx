@@ -28,10 +28,64 @@ export default function AdminDashboard(){
       setLoginError('Your admin session expired. Please sign in again.');
       return;
     }
-    if(m.ok)setItems(await m.json());
-    if(c.ok)setCats(await c.json());
-    if(o.ok)setOrders(await o.json());
-    if(stx.ok)setStats(await stx.json());
+    let menuData: Item[] = [];
+    let orderData: any[] = [];
+
+    if(m.ok) {
+      menuData = await m.json();
+      setItems(menuData);
+    }
+    if(c.ok) setCats(await c.json());
+    if(o.ok) {
+      orderData = await o.json();
+      setOrders(orderData);
+    }
+
+    // The dashboard can calculate its cards from the same orders/menu data
+    // that is already loaded. This keeps the UI working even if the separate
+    // stats endpoint is temporarily cached or unavailable on Render.
+    const todayIndia = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+
+    const todayOrders = orderData.filter((x:any) => {
+      const d = new Date(x.created_at);
+      if (Number.isNaN(d.getTime())) return false;
+      return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(d) === todayIndia;
+    });
+
+    const fallbackStats = {
+      orders: todayOrders.length,
+      revenue: todayOrders
+        .filter((x:any) => String(x.status).toLowerCase() !== 'cancelled')
+        .reduce((sum:number, x:any) => sum + Number(x.total || 0), 0),
+      pending: orderData.filter((x:any) => String(x.status).toLowerCase() === 'pending').length,
+      completed: orderData.filter((x:any) => String(x.status).toLowerCase() === 'completed').length,
+      cancelled: orderData.filter((x:any) => String(x.status).toLowerCase() === 'cancelled').length,
+      menuItems: menuData.length
+    };
+
+    // Prefer the server stats when valid, but never replace good fallback
+    // values with an empty/error response.
+    if(stx.ok) {
+      const serverStats = await stx.json().catch(()=>null);
+      if(serverStats && typeof serverStats === 'object' && !serverStats.error) {
+        setStats({...fallbackStats, ...serverStats});
+      } else {
+        setStats(fallbackStats);
+      }
+    } else {
+      setStats(fallbackStats);
+    }
+
     if(r.ok && !restaurantDirty.current)setRestaurant(await r.json());
     if(staffRes.ok)setStaff(await staffRes.json());
   }catch(e){

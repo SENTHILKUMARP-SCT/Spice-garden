@@ -280,16 +280,39 @@ app.get('/api/admin/stats/:restaurantId', adminAuth, async (req, res) => {
   try {
     const r = req.params.restaurantId;
     const day = `(created_at AT TIME ZONE 'Asia/Kolkata')::date=(NOW() AT TIME ZONE 'Asia/Kolkata')::date`;
-    const [[a], [b], [c], [d], [f], [e]] = await Promise.all([
-      pool.query(`SELECT COUNT(*)::int orders FROM orders WHERE restaurant_id=$1 AND ${day}`, [r]),
-      pool.query(`SELECT COALESCE(SUM(total),0) revenue FROM orders WHERE restaurant_id=$1 AND ${day} AND status<>'Cancelled'`, [r]),
-      pool.query(`SELECT COUNT(*)::int pending FROM orders WHERE restaurant_id=$1 AND ${day} AND status='Pending'`, [r]),
-      pool.query(`SELECT COUNT(*)::int completed FROM orders WHERE restaurant_id=$1 AND ${day} AND status='Completed'`, [r]),
-      pool.query(`SELECT COUNT(*)::int cancelled FROM orders WHERE restaurant_id=$1 AND ${day} AND status='Cancelled'`, [r]),
-      pool.query('SELECT COUNT(*)::int "menuItems" FROM menu_items WHERE restaurant_id=$1', [r])
+
+    // pg.query() returns a QueryResult object, not a MySQL-style [rows, fields] array.
+    // Keep the dashboard counters consistent: today's orders/revenue are date-scoped,
+    // while Pending/Cancelled show all currently outstanding/history counts.
+    const [ordersResult, revenueResult, pendingResult, completedResult, cancelledResult, menuResult] = await Promise.all([
+      pool.query(`SELECT COUNT(*)::int AS orders FROM orders WHERE restaurant_id=$1 AND ${day}`, [r]),
+      pool.query(`SELECT COALESCE(SUM(total),0)::numeric AS revenue FROM orders WHERE restaurant_id=$1 AND ${day} AND status<>'Cancelled'`, [r]),
+      pool.query(`SELECT COUNT(*)::int AS pending FROM orders WHERE restaurant_id=$1 AND status='Pending'`, [r]),
+      pool.query(`SELECT COUNT(*)::int AS completed FROM orders WHERE restaurant_id=$1 AND status='Completed'`, [r]),
+      pool.query(`SELECT COUNT(*)::int AS cancelled FROM orders WHERE restaurant_id=$1 AND status='Cancelled'`, [r]),
+      pool.query('SELECT COUNT(*)::int AS "menuItems" FROM menu_items WHERE restaurant_id=$1', [r])
     ]);
-    res.json({ orders: a.orders, revenue: b.revenue, pending: c.pending, completed: d.completed, cancelled: f.cancelled, menuItems: e.menuItems });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+
+    const a = ordersResult.rows[0];
+    const b = revenueResult.rows[0];
+    const c = pendingResult.rows[0];
+    const d = completedResult.rows[0];
+    const f = cancelledResult.rows[0];
+    const e = menuResult.rows[0];
+
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      orders: Number(a.orders || 0),
+      revenue: Number(b.revenue || 0),
+      pending: Number(c.pending || 0),
+      completed: Number(d.completed || 0),
+      cancelled: Number(f.cancelled || 0),
+      menuItems: Number(e.menuItems || 0)
+    });
+  } catch (e) {
+    console.error('Admin stats failed:', e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 app.get('/api/admin/menu/:restaurantId', adminAuth, async (req, res) => {

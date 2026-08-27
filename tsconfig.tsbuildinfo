@@ -1,1 +1,1 @@
-{"root":["./src/admindashboard.tsx","./src/app.tsx","./src/main.tsx","./src/config/restaurant.ts","./src/data/menu.ts","./src/src/vite-env.d.ts","./src/utils/whatsapp.ts"],"version":"5.9.3"}
+{"root":["./src/admindashboard.tsx","./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/config/restaurant.ts","./src/data/menu.ts","./src/src/vite-env.d.ts","./src/utils/whatsapp.ts"],"version":"5.9.3"}

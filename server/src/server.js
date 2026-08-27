@@ -79,13 +79,40 @@ function newOrderNumber() {
   return `ORD-${compact}-${suffix}`;
 }
 
-app.get('/api/health', async (_req, res) => {
+// Render/API availability checks
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: 'Spice Garden API',
+    message: 'Backend is running'
+  });
+});
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: 'Spice Garden API',
+    status: 'running'
+  });
+});
+
+// Separate database check so /api/health never becomes unavailable
+// just because PostgreSQL is temporarily unreachable.
+app.get('/api/db-health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.status(200).json({ ok: true, database: 'postgresql', status: 'connected' });
+    res.status(200).json({
+      ok: true,
+      database: 'postgresql',
+      status: 'connected'
+    });
   } catch (e) {
-    // Keep the health route reachable even if the database is temporarily unavailable.
-    res.status(200).json({ ok: true, database: 'postgresql', status: 'disconnected', error: e.message });
+    res.status(503).json({
+      ok: false,
+      database: 'postgresql',
+      status: 'disconnected',
+      error: e.message
+    });
   }
 });
 
@@ -286,4 +313,6 @@ app.get('/api/admin/restaurant/:restaurantId',adminAuth,async(req,res)=>{try{con
 app.put('/api/admin/restaurant/:restaurantId',adminAuth,async(req,res)=>{try{const x=req.body||{};const whatsapp=String(x.whatsapp_number||'').replace(/\D/g,'');if(whatsapp.length<10||whatsapp.length>15)return res.status(400).json({ok:false,error:'Valid WhatsApp number is required'});const {rows}=await pool.query(`UPDATE restaurants SET name=$1,description=$2,address=$3,phone=$4,whatsapp_number=$5,opening_time=$6,closing_time=$7,tax_percentage=$8,packaging_charge=$9,google_maps_url=$10,instagram_url=$11,updated_at=NOW() WHERE id=$12 RETURNING *`,[x.name,x.description,x.address,x.phone,whatsapp,x.opening_time||null,x.closing_time||null,Number(x.tax_percentage||0),Number(x.packaging_charge||0),x.google_maps_url||null,x.instagram_url||null,req.params.restaurantId]);if(!rows.length)return res.status(404).json({ok:false,error:'Restaurant not found'});res.json({ok:true,restaurant:rows[0]})}catch(e){console.error('Restaurant settings update failed:',e);res.status(400).json({ok:false,error:e.message})}});
 app.get('/api/admin/staff/:restaurantId',adminAuth,async(req,res)=>{try{const {rows}=await pool.query('SELECT id,full_name name,email,phone,role,is_active,created_at FROM users WHERE restaurant_id=$1 ORDER BY created_at DESC',[req.params.restaurantId]);res.json(rows)}catch(e){res.status(500).json({error:e.message})}});
 
-app.listen(PORT, () => console.log(`API running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Spice Garden API running on port ${PORT}`);
+});

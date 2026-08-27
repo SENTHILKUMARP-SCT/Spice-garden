@@ -10,7 +10,7 @@ import { restaurant } from "./config/restaurant"
 import { buildWhatsAppMessage, createOrderNumber, type CartItem, type CustomerDetails } from "./utils/whatsapp"
 
 const CART_KEY = "spice-garden-black-white-cart-v2"
-const API=(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '')
+const API=(import.meta.env.VITE_API_URL || 'https://spice-garden-api-iug3.onrender.com').replace(/\/$/, '')
 
 function whatsappUrlNumber(value:any){
   const digits=String(value||"").replace(/\\D/g,"")

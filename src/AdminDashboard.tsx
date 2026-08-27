@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react'
 import {BarChart3, Boxes, ClipboardList, LogOut, Menu as MenuIcon, Plus, Settings, Users, X, Pencil, Trash2, CheckCircle2} from 'lucide-react'
-const API=(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, ''); const RID=1
+const API=(import.meta.env.VITE_API_URL || 'https://spice-garden-api-iug3.onrender.com').replace(/\/$/, ''); const RID=1
 
 type Item={id:number;name:string;category_id:number|null;category_name:string;description:string;price:number;image_url:string;food_type:string;is_bestseller:boolean;is_available:boolean}
 
